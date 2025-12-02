@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Методологии за разработка: Waterfall срещу Agile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Chosen Palette: Warm Neutrals & Professional Accents -->
+    <!-- Background: #f8f5f2 (Warm Off-white) -->
+    <!-- Waterfall Color: #4a5568 (Slate Blue - Structured) -->
+    <!-- Agile Color: #ed8936 (Orange - Energetic/Flexible) -->
+    <!-- Text: #2d3748 (Dark Gray) -->
+
+    <!-- Application Structure Plan:
+        The application is structured as an interactive educational dashboard.
+        1. Hero Section: Sets the context about "Managing Chaos".
+        2. Methodology Explorer (Tabs): Allows users to switch between the two main philosophies (Waterfall & Agile) to avoid cognitive overload.
+           - Waterfall Tab: visualizes the linear 'step-down' process.
+           - Agile Tab: visualizes the iterative cycle and manifesto values.
+        3. Framework Deep Dive: Focuses on Scrum and Kanban with interactive elements (Kanban board simulation).
+        4. Comparison Lab: Uses data visualization (Chart.js) to compare 'Risk', 'Flexibility', etc., and simulates the 'Paper Plane' exercise outcome.
+        5. Workshop & Quiz: Applies knowledge through a 'User Story Builder' and a final assessment.
+        Rationale: This structure moves from Theory -> Specific Frameworks -> Comparative Analysis -> Practical Application, mirroring Bloom's Taxonomy.
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. Waterfall Phases: CSS-styled vertical timeline. Goal: Show rigidity.
+        2. Agile Loop: Interactive circular layout using CSS Grid. Goal: Show iteration.
+        3. Comparison Radar Chart (Chart.js): Compares abstract metrics (Flexibility, Client Involvement). Goal: Visual synthesis of pros/cons.
+        4. Value Delivery Line Chart (Chart.js): Simulates the 'Paper Plane' exercise (Batch vs Continuous delivery). Goal: Visualize the risk/value curve.
+        5. Kanban Board (HTML/JS): Simple interactive drag-simulation (click-to-move). Goal: Demonstrate flow control.
+        6. User Story Generator (Input/Output): Form interaction. Goal: Practice writing requirements.
+        7. Quiz (JS): Interactive feedback. Goal: Assessment.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used (using FontAwesome fonts/CSS shapes). NO Mermaid JS used. -->
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8f5f2;
+        color: #2d3748;
+      }
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 300px;
+        max-height: 400px;
+      }
+      .kanban-card {
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .kanban-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .tab-active {
+        border-bottom: 3px solid #ed8936;
+        color: #ed8936;
+        font-weight: 700;
+      }
+      .tab-inactive {
+        color: #718096;
+      }
+      .step-connector::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -20px;
+        width: 2px;
+        height: 20px;
+        background-color: #cbd5e0;
+        transform: translateX(-50%);
+      }
+      .last-step::after {
+        display: none;
+      }
+
+      @media (min-width: 768px) {
+        .chart-container {
+          height: 350px;
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div
+        class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <h1 class="text-xl font-bold text-gray-800">
+          <i class="fas fa-layer-group mr-2 text-orange-500"></i>Методологии за
+          разработка
+        </h1>
+        <nav class="hidden md:flex space-x-6">
+          <button
+            onclick="navTo('intro')"
+            class="text-sm font-medium hover:text-orange-500 transition"
+          >
+            Въведение
+          </button>
+          <button
+            onclick="navTo('waterfall')"
+            class="text-sm font-medium hover:text-orange-500 transition"
+          >
+            Waterfall
+          </button>
+          <button
+            onclick="navTo('agile')"
+            class="text-sm font-medium hover:text-orange-500 transition"
+          >
+            Agile
+          </button>
+          <button
+            onclick="navTo('practice')"
+            class="text-sm font-medium hover:text-orange-500 transition"
+          >
+            Практика
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full space-y-12">
+      <!-- Intro Section -->
+      <section
+        id="intro"
+        class="bg-white rounded-xl shadow-lg p-8 border-l-4 border-orange-400"
+      >
+        <h2 class="text-3xl font-bold mb-4 text-gray-800">
+          Философия на хаоса
+        </h2>
+        <p class="text-lg text-gray-600 mb-6">
+          В софтуерното инженерство <strong>методологията</strong> определя как
+          управляваме несигурността. За разлика от строителството, софтуерът е
+          гъвкав, но податлив на грешки. Изборът между
+          <strong>Waterfall</strong> (Ред) и <strong>Agile</strong> (Гъвкавост)
+          е фундаментален за успеха на всеки проект.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="bg-blue-50 p-6 rounded-lg text-center cursor-pointer hover:bg-blue-100 transition"
+            onclick="navTo('waterfall')"
+          >
+            <div class="text-4xl mb-2">🏗️</div>
+            <h3 class="font-bold text-blue-900 text-xl">Waterfall</h3>
+            <p class="text-sm text-blue-700 mt-2">
+              Каскаден модел. Строго планиране. Предвидимост.
+            </p>
+          </div>
+          <div
+            class="bg-orange-50 p-6 rounded-lg text-center cursor-pointer hover:bg-orange-100 transition"
+            onclick="navTo('agile')"
+          >
+            <div class="text-4xl mb-2">🔄</div>
+            <h3 class="font-bold text-orange-900 text-xl">Agile</h3>
+            <p class="text-sm text-orange-700 mt-2">
+              Гъвкав подход. Адаптация. Еволюция.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Content Switcher -->
+      <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+        <button
+          id="btn-waterfall"
+          onclick="switchTab('waterfall')"
+          class="tab-active px-6 py-3 whitespace-nowrap"
+        >
+          Waterfall: Строителят
+        </button>
+        <button
+          id="btn-agile"
+          onclick="switchTab('agile')"
+          class="tab-inactive px-6 py-3 whitespace-nowrap"
+        >
+          Agile: Еволюцията
+        </button>
+        <button
+          id="btn-compare"
+          onclick="switchTab('compare')"
+          class="tab-inactive px-6 py-3 whitespace-nowrap"
+        >
+          Анализ & Сравнение
+        </button>
+      </div>
+
+      <!-- Waterfall Section -->
+      <section id="tab-waterfall" class="space-y-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-bold mb-4 text-slate-700">
+            Каскадният модел
+          </h3>
+          <p class="mb-4">
+            Класически метод, при който всяка фаза трябва да приключи напълно,
+            преди да започне следващата. Наподобява водопад – водата не може да
+            се върне нагоре.
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-8 items-start">
+            <!-- Phases Visualization -->
+            <div class="relative pl-4 space-y-2">
+              <div
+                class="step-connector relative bg-slate-100 border border-slate-300 p-4 rounded text-center font-bold text-slate-700 shadow-sm"
+              >
+                1. Изисквания (Requirements)
+                <div class="text-xs font-normal text-slate-500 mt-1">
+                  Подписване на "договор". Какво ще правим?
+                </div>
+              </div>
+              <div
+                class="step-connector relative bg-slate-100 border border-slate-300 p-4 rounded text-center font-bold text-slate-700 shadow-sm ml-4"
+              >
+                2. Дизайн (Design)
+                <div class="text-xs font-normal text-slate-500 mt-1">
+                  Архитектура и планове. Всичко е на хартия.
+                </div>
+              </div>
+              <div
+                class="step-connector relative bg-slate-100 border border-slate-300 p-4 rounded text-center font-bold text-slate-700 shadow-sm ml-8"
+              >
+                3. Имплементация (Code)
+                <div class="text-xs font-normal text-slate-500 mt-1">
+                  Писане на код. Изолирана работа.
+                </div>
+              </div>
+              <div
+                class="step-connector relative bg-slate-100 border border-slate-300 p-4 rounded text-center font-bold text-slate-700 shadow-sm ml-12"
+              >
+                4. Тестване (Testing)
+                <div class="text-xs font-normal text-slate-500 mt-1">
+                  Проверка за грешки. Често твърде късно.
+                </div>
+              </div>
+              <div
+                class="last-step relative bg-green-50 border border-green-300 p-4 rounded text-center font-bold text-green-800 shadow-sm ml-16"
+              >
+                5. Внедряване (Deploy)
+                <div class="text-xs font-normal text-green-600 mt-1">
+                  Продуктът стига до клиента.
+                </div>
+              </div>
+            </div>
+
+            <!-- Pros/Cons -->
+            <div class="space-y-4">
+              <div class="bg-red-50 p-4 rounded border-l-4 border-red-500">
+                <h4 class="font-bold text-red-800">
+                  <i class="fas fa-exclamation-triangle"></i> Основни Риске
+                </h4>
+                <ul class="list-disc pl-5 text-sm text-red-700 mt-2 space-y-1">
+                  <li>
+                    <strong>Ефект на тунела:</strong> Клиентът не вижда нищо
+                    месеци наред.
+                  </li>
+                  <li>
+                    <strong>Илюзия за прогрес:</strong> 100% документация = 0%
+                    работещ софтуер.
+                  </li>
+                  <li>
+                    <strong>Скъпи грешки:</strong> Грешка в изискванията,
+                    открита при тестването, струва скъпо.
+                  </li>
+                </ul>
+              </div>
+              <div class="bg-green-50 p-4 rounded border-l-4 border-green-500">
+                <h4 class="font-bold text-green-800">
+                  <i class="fas fa-check-circle"></i> Кога да използваме?
+                </h4>
+                <ul
+                  class="list-disc pl-5 text-sm text-green-700 mt-2 space-y-1"
+                >
+                  <li>Проекти с фиксиран бюджет и ясни изисквания.</li>
+                  <li>
+                    Критични системи (медицина, авиация), където импровизацията
+                    е опасна.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agile Section -->
+      <section id="tab-agile" class="space-y-8 hidden">
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-bold mb-4 text-orange-600">
+            Agile: Гъвкавост и Емпиризъм
+          </h3>
+          <p class="mb-6">
+            Agile не е метод, а нагласа (mindset). Фокусът е върху малки стъпки,
+            обратна връзка и адаптация. Вместо да строим цялата "кола" наведнъж,
+            първо правим тротинетка (MVP), после колело, и накрая кола.
+          </p>
+
+          <!-- Agile Manifesto Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-orange-50 p-4 rounded border border-orange-200">
+              <span class="font-bold text-orange-800">Хора и комуникация</span>
+              <span class="text-gray-500 mx-2">></span>
+              <span class="text-gray-500 text-sm">Процеси и инструменти</span>
+            </div>
+            <div class="bg-orange-50 p-4 rounded border border-orange-200">
+              <span class="font-bold text-orange-800">Работещ софтуер</span>
+              <span class="text-gray-500 mx-2">></span>
+              <span class="text-gray-500 text-sm"
+                >Изчерпателна документация</span
+              >
+            </div>
+            <div class="bg-orange-50 p-4 rounded border border-orange-200">
+              <span class="font-bold text-orange-800"
+                >Сътрудничество с клиента</span
+              >
+              <span class="text-gray-500 mx-2">></span>
+              <span class="text-gray-500 text-sm">Договаряне на условия</span>
+            </div>
+            <div class="bg-orange-50 p-4 rounded border border-orange-200">
+              <span class="font-bold text-orange-800"
+                >Отговор на промяната</span
+              >
+              <span class="text-gray-500 mx-2">></span>
+              <span class="text-gray-500 text-sm">Следване на плана</span>
+            </div>
+          </div>
+
+          <!-- Interactive Frameworks: Scrum & Kanban -->
+          <div class="grid lg:grid-cols-2 gap-8">
+            <!-- SCRUM Column -->
+            <div class="border rounded-lg p-5 bg-gray-50">
+              <h4 class="font-bold text-lg mb-3 border-b pb-2">
+                <i class="fas fa-sync text-blue-500"></i> Scrum Рамка
+              </h4>
+              <p class="text-sm mb-4">
+                Структуриран процес с фиксирани роли и събития (Спринтове).
+              </p>
+
+              <div class="space-y-3">
+                <details
+                  class="group bg-white rounded shadow-sm p-3 cursor-pointer"
+                >
+                  <summary class="font-bold text-blue-700 flex justify-between">
+                    Роли
+                    <i
+                      class="fas fa-chevron-down group-open:rotate-180 transition"
+                    ></i>
+                  </summary>
+                  <ul class="text-sm mt-2 text-gray-600 pl-4 list-disc">
+                    <li>
+                      <strong>Product Owner:</strong> Гласът на клиента. Казва
+                      "Какво".
+                    </li>
+                    <li>
+                      <strong>Scrum Master:</strong> Слуга-лидер. Пази процеса.
+                    </li>
+                    <li>
+                      <strong>Dev Team:</strong> Екипът, който върши работата.
+                    </li>
+                  </ul>
+                </details>
+                <details
+                  class="group bg-white rounded shadow-sm p-3 cursor-pointer"
+                >
+                  <summary class="font-bold text-blue-700 flex justify-between">
+                    Събития
+                    <i
+                      class="fas fa-chevron-down group-open:rotate-180 transition"
+                    ></i>
+                  </summary>
+                  <ul class="text-sm mt-2 text-gray-600 pl-4 list-disc">
+                    <li><strong>Sprint:</strong> 1-4 седмици цикъл.</li>
+                    <li>
+                      <strong>Daily Stand-up:</strong> 15 мин синхронизация.
+                    </li>
+                    <li><strong>Review:</strong> Демо пред клиента.</li>
+                    <li>
+                      <strong>Retrospective:</strong> Подобрение на процеса.
+                    </li>
+                  </ul>
+                </details>
+              </div>
+            </div>
+
+            <!-- KANBAN Column -->
+            <div class="border rounded-lg p-5 bg-gray-50">
+              <h4 class="font-bold text-lg mb-3 border-b pb-2">
+                <i class="fas fa-columns text-green-500"></i> Kanban Симулация
+              </h4>
+              <p class="text-sm mb-4">
+                Поточен процес. Ограничаване на работата в прогрес (WIP).
+              </p>
+
+              <!-- Mini Kanban Board -->
+              <div class="grid grid-cols-3 gap-2 text-xs h-40">
+                <div
+                  class="bg-gray-200 p-2 rounded flex flex-col gap-2"
+                  id="kb-todo"
+                >
+                  <div class="font-bold text-center text-gray-600">To Do</div>
+                  <div
+                    class="kanban-card bg-white p-2 rounded shadow border-l-4 border-red-400"
+                    onclick="moveCard(this)"
+                  >
+                    Задача A
+                  </div>
+                  <div
+                    class="kanban-card bg-white p-2 rounded shadow border-l-4 border-blue-400"
+                    onclick="moveCard(this)"
+                  >
+                    Задача B
+                  </div>
+                </div>
+                <div
+                  class="bg-gray-200 p-2 rounded flex flex-col gap-2"
+                  id="kb-progress"
+                >
+                  <div class="font-bold text-center text-gray-600">
+                    In Progress (WIP: 1)
+                  </div>
+                </div>
+                <div
+                  class="bg-gray-200 p-2 rounded flex flex-col gap-2"
+                  id="kb-done"
+                >
+                  <div class="font-bold text-center text-gray-600">Done</div>
+                </div>
+              </div>
+              <p class="text-xs text-center text-gray-500 mt-2 italic">
+                Кликнете върху задача, за да я преместите надясно.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Compare Analysis Section -->
+      <section id="tab-compare" class="space-y-8 hidden">
+        <!-- Radar Chart Comparison -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+          <h3 class="text-2xl font-bold mb-4">Сравнителен Анализ</h3>
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div class="w-full flex flex-col items-center">
+              <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+              </div>
+              <p class="text-sm text-gray-500 mt-4 text-center">
+                Визуализация на силните страни на всяка методология.
+              </p>
+            </div>
+            <div class="space-y-4 text-sm">
+              <div class="p-4 bg-gray-50 rounded">
+                <h4 class="font-bold">Цената на промяната</h4>
+                <p class="mt-1">
+                  При <strong>Waterfall</strong> промяната е най-скъпа в края
+                  (фаза Тестване/Внедряване). При <strong>Agile</strong> кривата
+                  е по-плоска, защото промените се очакват постоянно.
+                </p>
+              </div>
+              <div class="p-4 bg-gray-50 rounded">
+                <h4 class="font-bold">Участие на клиента</h4>
+                <p class="mt-1">
+                  <strong>Waterfall:</strong> Високо в началото и края, нулево
+                  по средата. <br /><strong>Agile:</strong> Постоянно и активно
+                  участие през целия процес.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paper Plane Simulation Chart -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-bold mb-4">
+            Резултат от симулация: "Самолетната фабрика"
+          </h3>
+          <p class="mb-4 text-gray-600">
+            Този график показва натрупването на бизнес стойност (успешни
+            самолети) по време на упражнението. Забележете как Waterfall има
+            дълъг период без резултат, докато Agile доставя стойност поетапно.
+          </p>
+          <div class="chart-container mx-auto">
+            <canvas id="simulationChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Practice & Quiz Section -->
+      <section
+        id="practice"
+        class="bg-white rounded-xl shadow-lg p-8 border-t-4 border-indigo-500"
+      >
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">
+          Работилница & Тест
+        </h2>
+
+        <div class="grid lg:grid-cols-2 gap-12">
+          <!-- User Story Builder -->
+          <div>
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i class="fas fa-pencil-alt mr-2 text-indigo-500"></i> Генератор
+              на User Story
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Превърнете техническо изискване в Agile формат. <br />
+              <em
+                >Пример: "Като [гладен човек], искам [да видя менюто], за да [си
+                избера пица]."</em
+              >
+            </p>
+
+            <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase"
+                  >Като (Роля)</label
+                >
+                <input
+                  type="text"
+                  id="us-role"
+                  placeholder="напр. Регистриран клиент"
+                  class="w-full p-2 border rounded text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase"
+                  >Искам да (Действие/Функция)</label
+                >
+                <input
+                  type="text"
+                  id="us-action"
+                  placeholder="напр. виждам историята на поръчките си"
+                  class="w-full p-2 border rounded text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase"
+                  >За да (Полза/Стойност)</label
+                >
+                <input
+                  type="text"
+                  id="us-benefit"
+                  placeholder="напр. поръчам любимата си храна по-бързо"
+                  class="w-full p-2 border rounded text-sm"
+                />
+              </div>
+              <button
+                onclick="generateStory()"
+                class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 font-bold text-sm"
+              >
+                Генерирай История
+              </button>
+            </div>
+
+            <div
+              id="story-output"
+              class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-gray-800 italic hidden"
+            >
+              <!-- Result goes here -->
+            </div>
+          </div>
+
+          <!-- Quiz -->
+          <div>
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+              <i class="fas fa-question-circle mr-2 text-indigo-500"></i>
+              Проверка на знанията
+            </h3>
+            <div id="quiz-container" class="space-y-4">
+              <!-- Questions injected by JS -->
+            </div>
+            <div id="quiz-result" class="mt-4 font-bold text-lg hidden"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-6 text-center mt-auto">
+      <p class="text-sm">
+        Интерактивен урок базиран на материал за софтуерни методологии.
+      </p>
+    </footer>
+
+    <script>
+      // --- State Management ---
+      const state = {
+        currentTab: "waterfall",
+        quizScore: 0,
+      };
+
+      // --- Chart Configurations ---
+
+      // 1. Comparison Radar Chart
+      const ctxCompare = document
+        .getElementById("comparisonChart")
+        .getContext("2d");
+      const comparisonChart = new Chart(ctxCompare, {
+        type: "radar",
+        data: {
+          labels: [
+            "Гъвкавост",
+            "Първоначално планиране",
+            "Участие на клиента",
+            "Предвидимост на бюджета",
+            "Честота на доставка",
+          ],
+          datasets: [
+            {
+              label: "Waterfall",
+              data: [2, 10, 3, 9, 2],
+              backgroundColor: "rgba(74, 85, 104, 0.2)",
+              borderColor: "rgba(74, 85, 104, 1)",
+              pointBackgroundColor: "rgba(74, 85, 104, 1)",
+            },
+            {
+              label: "Agile",
+              data: [10, 4, 9, 5, 10],
+              backgroundColor: "rgba(237, 137, 54, 0.2)",
+              borderColor: "rgba(237, 137, 54, 1)",
+              pointBackgroundColor: "rgba(237, 137, 54, 1)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { display: false },
+              suggestedMin: 0,
+              suggestedMax: 10,
+            },
+          },
+        },
+      });
+
+      // 2. Simulation Line Chart (Paper Plane Factory)
+      const ctxSim = document
+        .getElementById("simulationChart")
+        .getContext("2d");
+      const simulationChart = new Chart(ctxSim, {
+        type: "line",
+        data: {
+          labels: ["Начало", "5 мин", "10 мин", "15 мин", "20 мин", "Край"],
+          datasets: [
+            {
+              label: "Waterfall (Стойност)",
+              data: [0, 0, 0, 0, 0, 80], // Big bang delivery (risky)
+              borderColor: "#4a5568",
+              borderDash: [5, 5],
+              fill: false,
+              tension: 0.1,
+            },
+            {
+              label: "Agile (Стойност)",
+              data: [0, 20, 35, 55, 75, 95], // Incremental delivery
+              borderColor: "#ed8936",
+              backgroundColor: "rgba(237, 137, 54, 0.1)",
+              fill: true,
+              tension: 0.4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                afterLabel: function (context) {
+                  if (
+                    context.dataset.label.includes("Waterfall") &&
+                    context.dataIndex === 5
+                  ) {
+                    return "Риск от провал ако има грешка!";
+                  }
+                  if (context.dataset.label.includes("Agile")) {
+                    return "Ранна обратна връзка.";
+                  }
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              title: { display: true, text: "Бизнес Стойност (%)" },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // --- Navigation Logic ---
+      function navTo(sectionId) {
+        // If section is inside tabs, switch tab first
+        if (["waterfall", "agile"].includes(sectionId)) {
+          switchTab(sectionId);
+          document
+            .getElementById("btn-waterfall")
+            .scrollIntoView({ behavior: "smooth" });
+        } else if (sectionId === "intro") {
+          document
+            .getElementById("intro")
+            .scrollIntoView({ behavior: "smooth" });
+        } else if (sectionId === "practice") {
+          document
+            .getElementById("practice")
+            .scrollIntoView({ behavior: "smooth" });
+        }
+      }
+
+      function switchTab(tabName) {
+        // Hide all tab sections
+        document.getElementById("tab-waterfall").classList.add("hidden");
+        document.getElementById("tab-agile").classList.add("hidden");
+        document.getElementById("tab-compare").classList.add("hidden");
+
+        // Deactivate all buttons
+        document.getElementById("btn-waterfall").className =
+          "tab-inactive px-6 py-3 whitespace-nowrap";
+        document.getElementById("btn-agile").className =
+          "tab-inactive px-6 py-3 whitespace-nowrap";
+        document.getElementById("btn-compare").className =
+          "tab-inactive px-6 py-3 whitespace-nowrap";
+
+        // Show selected
+        document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+        document.getElementById(`btn-${tabName}`).className =
+          "tab-active px-6 py-3 whitespace-nowrap";
+
+        // Update charts if needed
+        if (tabName === "compare") {
+          comparisonChart.resize();
+          simulationChart.resize();
+        }
+      }
+
+      // --- Kanban Logic ---
+      function moveCard(card) {
+        const todo = document.getElementById("kb-todo");
+        const progress = document.getElementById("kb-progress");
+        const done = document.getElementById("kb-done");
+
+        const parentId = card.parentElement.id;
+
+        if (parentId === "kb-todo") {
+          // Check WIP limit (arbitrary limit of 2 for demo, but text says limit tasks)
+          if (progress.children.length > 3) {
+            // 1 header + 2 tasks
+            alert(
+              "Kanban правило: Ограничете работата в прогрес (WIP)! Завършете нещо преди да започнете ново."
+            );
+            return;
+          }
+          progress.appendChild(card);
+        } else if (parentId === "kb-progress") {
+          done.appendChild(card);
+          card.classList.add("opacity-50", "line-through"); // Visual cue for done
+        } else {
+          // Reset
+          todo.appendChild(card);
+          card.classList.remove("opacity-50", "line-through");
+        }
+      }
+
+      // --- User Story Generator ---
+      function generateStory() {
+        const role = document.getElementById("us-role").value.trim() || "...";
+        const action =
+          document.getElementById("us-action").value.trim() || "...";
+        const benefit =
+          document.getElementById("us-benefit").value.trim() || "...";
+
+        const outputDiv = document.getElementById("story-output");
+        outputDiv.innerHTML = `"Като <strong>${role}</strong>, искам <strong>${action}</strong>, за да <strong>${benefit}</strong>."`;
+        outputDiv.classList.remove("hidden");
+      }
+
+      // --- Quiz Logic ---
+      const quizData = [
+        {
+          q: "Какво е MVP в Agile?",
+          options: [
+            "Най-ценният играч",
+            "Минимален жизнеспособен продукт",
+            "Максимален обем производство",
+          ],
+          ans: 1, // Index
+        },
+        {
+          q: "Кой отговаря за приоритизирането на задачите в Scrum?",
+          options: ["Scrum Master", "Product Owner", "Екипът"],
+          ans: 1,
+        },
+        {
+          q: "Кога е най-скъпо да се поправи грешка при Waterfall?",
+          options: ["В началото", "Във фаза Дизайн", "Във фаза Тестване/Край"],
+          ans: 2,
+        },
+        {
+          q: "Какво ограничава Kanban?",
+          options: ["Работата в прогрес (WIP)", "Броят на срещите", "Бюджета"],
+          ans: 0,
+        },
+      ];
+
+      function initQuiz() {
+        const container = document.getElementById("quiz-container");
+        container.innerHTML = "";
+
+        quizData.forEach((item, index) => {
+          const qDiv = document.createElement("div");
+          qDiv.className = "border-b pb-4";
+
+          let optionsHtml = "";
+          item.options.forEach((opt, optIndex) => {
+            optionsHtml += `
+                        <label class="block mt-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                            <input type="radio" name="q${index}" value="${optIndex}" class="mr-2"> ${opt}
+                        </label>
+                    `;
+          });
+
+          qDiv.innerHTML = `
+                    <p class="font-bold text-gray-800">${index + 1}. ${
+            item.q
+          }</p>
+                    <div class="ml-2 text-sm text-gray-700">${optionsHtml}</div>
+                `;
+          container.appendChild(qDiv);
+        });
+
+        const btn = document.createElement("button");
+        btn.innerText = "Провери отговорите";
+        btn.className =
+          "mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-bold text-sm";
+        btn.onclick = checkQuiz;
+        container.appendChild(btn);
+      }
+
+      function checkQuiz() {
+        let score = 0;
+        quizData.forEach((item, index) => {
+          const selected = document.querySelector(
+            `input[name="q${index}"]:checked`
+          );
+          const parent = document
+            .querySelector(`input[name="q${index}"]`)
+            .closest("div").parentElement; // parent container
+
+          if (selected) {
+            if (parseInt(selected.value) === item.ans) {
+              score++;
+              parent.style.borderLeft = "4px solid green";
+            } else {
+              parent.style.borderLeft = "4px solid red";
+            }
+          }
+        });
+
+        const resultDiv = document.getElementById("quiz-result");
+        resultDiv.innerText = `Резултат: ${score} от ${quizData.length} верни отговора!`;
+        resultDiv.classList.remove("hidden");
+        resultDiv.className =
+          score === quizData.length
+            ? "mt-4 font-bold text-lg text-green-600"
+            : "mt-4 font-bold text-lg text-orange-600";
+      }
+
+      // Initialize
+      initQuiz();
+    </script>
+  </body>
+</html>
